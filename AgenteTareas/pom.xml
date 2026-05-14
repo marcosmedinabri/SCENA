@@ -14,18 +14,26 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>tilab</id>
-            <url>https://jade.tilab.com/maven/</url>
-        </repository>
-    </repositories>
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+    </build>
+
+
 
     <dependencies>
         <dependency>
-            <groupId>com.tilab.jade</groupId>
+            <groupId>local</groupId>
             <artifactId>jade</artifactId>
             <version>4.6.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/jade.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>local</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.3</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/commons-codec-1.3.jar</systemPath>
         </dependency>
     </dependencies>
 
