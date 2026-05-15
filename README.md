@@ -106,10 +106,10 @@ Al arrancar, JADE abre su GUI de administración en el puerto **1201**.
 
 ## Autores
 
-- **Marcos Medina** (`marcosmedinabri`)
+- **Marcos**
 - **Diego** 
 - **Silvia**
-
+- **Daniel**
 ---
 
 ## Licencia
