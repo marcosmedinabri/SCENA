@@ -48,7 +48,7 @@ public class AgenteInterfaz extends Agent {
                     request.addReceiver(planificadorAID);
                     //Ejemplo porq no tenemos interfaz para recoger datos todavía
                     request.setContent("Tarea1: Examen, Prioridad: Alta; Tarea2: Práctica, Prioridad: Media"); 
-                    request.setConversationId("planificacion-semana-1"); //para identificar las conversaciones despues (esto hay q automatizarlo despues)
+                    request.setConversationId("planificacion-semanal-1"); //para identificar las conversaciones despues (esto hay q automatizarlo despues)
                     send(request);
                     System.out.println(getLocalName() + " ha enviado los datos de las tareas.");
 
