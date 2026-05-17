@@ -47,17 +47,12 @@ public class AgenteInterfaz extends Agent {
                     // Preparar el mensaje
                     ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
                     request.addReceiver(planificadorAID);
-                    //Ejemplo porq no tenemos interfaz para recoger datos todavía
-                    
+                  
                     /*1. HACERSE UNA LISTA List<Tarea> DE TAREAS PARA EN EL BUCLE METERSE LOS CAMPOS RECOGIDOS*/
                     /*2. AQUI RECOGER LOS DATOS EN UN BUCLE WHILE HASTA QUE SE VEA EL MENSAJE "NO HAY MÁS TAREAS"*/
                     request.setContent("Tarea1: Examen, Prioridad: Alta; Tarea2: Práctica, Prioridad: Media"); 
-<<<<<<< Updated upstream
-=======
-                    
-                    
->>>>>>> Stashed changes
                     request.setConversationId("planificacion-semana-1"); //para identificar las conversaciones despues (esto hay q automatizarlo despues)
+
                     send(request);
                     System.out.println(getLocalName() + " ha enviado los datos de las tareas.");
 
