@@ -1,7 +1,7 @@
 # SSII
 # AgenteTareas — Sistema Multi-Agente con JADE
 
-Práctica de la asignatura **Sistemas de Inteligencia Artificial (SSII)** — 8.º cuatrimestre, Grado en Ingeniería en Robótica, UPM.
+Práctica de la asignatura **Sistemas de Inteligencia Artificial (SSII)** — 8.º cuatrimestre, Grado en Ingeniería Informática, UPM.
 
 Sistema multi-agente desarrollado con el framework **JADE (Java Agent Development Framework)** que implementa planificación y scheduling de tareas semanales mediante comunicación entre agentes autónomos.
 
