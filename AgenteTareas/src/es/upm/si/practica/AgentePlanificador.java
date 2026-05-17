@@ -1,6 +1,7 @@
 package es.upm.si.practica;
 
 import jade.core.Agent;
+
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -8,6 +9,11 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class AgentePlanificador extends Agent {
 
@@ -37,12 +43,20 @@ public class AgentePlanificador extends Agent {
                 // Espera las peticiones (REQUEST)
                 MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
                 ACLMessage msg = receive(mt); //mensaje del AgenteInterfaz
-
+                String resultadoPlanificacion = null;
+                
                 if (msg != null) {
-                    System.out.println(getLocalName() + " ha recibido tareas para procesar: " + msg.getContent());
+                    System.out.println(getLocalName() + " ha recibido tareas para procesar");
                     
                     /*AQUI IRIA LA LOGICA DE LAS OPERACIONES Y ESO*/
-                    String resultadoPlanificacion = "Lunes: Examen SI, Martes: Entrega JADE";
+                    try {
+						List<Tarea> listaRecibida = (List<Tarea>) msg.getContentObject();
+						resultadoPlanificacion = AlgoritmoPlanificador.generarHorarioSemanal(listaRecibida); //se llama al algoritmo
+						
+					} catch (UnreadableException e) {
+						System.err.println("Error al deserializar el objeto: el formato de bytes no es válido.");
+						e.printStackTrace();
+					}
                     
                     /*RESPUESTA A QUIEN HA ENVIADO LA PETICION*/
                     ACLMessage reply = msg.createReply(); //incluye el identificador
@@ -58,7 +72,7 @@ public class AgentePlanificador extends Agent {
         });
     }
 
-    // Es buena práctica desregistrar el agente cuando se destruye
+    // desregistrar el agente cuando se destruye
     @Override
     protected void takeDown() {
         try {
