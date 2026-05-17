@@ -50,7 +50,10 @@ public class AgentePlanificador extends Agent {
                     
                     /*AQUI IRIA LA LOGICA DE LAS OPERACIONES Y ESO*/
                     try {
+                        @SuppressWarnings("unchecked") // Esto lo pongo para que el IDE no se queje, sabemos de sobra que siempre vamos a recibir una lista de tareas
 						List<Tarea> listaRecibida = (List<Tarea>) msg.getContentObject();
+
+                        System.out.println("La lista recibida es: " + listaRecibida.toString());
 						resultadoPlanificacion = AlgoritmoPlanificador.generarHorarioSemanal(listaRecibida); //se llama al algoritmo
 						
 					} catch (UnreadableException e) {
