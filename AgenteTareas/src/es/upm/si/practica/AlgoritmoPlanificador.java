@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AlgoritmoPlanificador {
-	 public static String generarHorarioSemanal(List<Tarea> listaTareas) {
-		 String resultado = "Horario";
+	 public static ArrayList<Pelicula> generarListaPelis(List<Pelicula> listaPelis, FiltrosUsuario filtros) {
+		 ArrayList<Pelicula> retultado = "Ranking";
 		 return resultado;
 	 }
 }
