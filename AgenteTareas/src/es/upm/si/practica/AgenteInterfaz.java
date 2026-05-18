@@ -46,11 +46,11 @@ public class AgenteInterfaz extends Agent {
                     // Preparar el mensaje
                     ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
                     request.addReceiver(planificadorAID);
- 
+                    
                     /*2. AQUI RECOGER LOS DATOS DEL USUAIO"*/
-                    request.setContent("Comedia, Aventuras, Acción, 2025"); 
-
+                    request.setContent("Comedia, Aventuras, Acción, 2025");
                     request.setConversationId("planificacion-semana-1"); //para identificar las conversaciones despues (esto hay q automatizarlo despues)
+
                     send(request);
                     System.out.println(getLocalName() + " ha enviado los datos");
 
