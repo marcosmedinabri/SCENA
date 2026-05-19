@@ -49,7 +49,6 @@ public class AgenteInterfaz extends Agent {
                     fe.printStackTrace();
                 }
                 
-                /*Envia al agentePlanificador un mensaje REQUUEST con tareas*/
                 /*Envia al agentePlanificador un mensaje REQUEST con tareas*/
                 
                 if (planificadorAID != null) {
@@ -100,17 +99,13 @@ public class AgenteInterfaz extends Agent {
                     // Preparar el mensaje
                     ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
                     request.addReceiver(planificadorAID);
+                    
+                    /*2. AQUI RECOGER LOS DATOS DEL USUAIO"*/
+                    request.setContent("Comedia, Aventuras, Acción, 2025");
+                    request.setConversationId("planificacion-semana-1"); //para identificar las conversaciones despues (esto hay q automatizarlo despues)
 
-                    // Aqui cargo el contenido del mensaje con listatareas
-                    try {
-                        request.setContentObject((Serializable) listatareas);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    request.setConversationId("planificacion-semanal-1"); //para identificar las conversaciones despues (esto hay q automatizarlo despues)
-                    send(request); // Y finalmente lo envio y deberia darme bien?
-
-                    System.out.println(getLocalName() + " ha enviado los datos de las tareas.");
+                    send(request);
+                    System.out.println(getLocalName() + " ha enviado los datos");
 
                     // Se queda bloaqueado esperando la respuesta
                     // Queremos una respuesta a esta conversación y se espera el id "planificacion-semanal-1"
