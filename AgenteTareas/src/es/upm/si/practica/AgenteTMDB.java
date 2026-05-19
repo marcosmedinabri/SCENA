@@ -1,9 +1,15 @@
 package es.upm.si.practica;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
@@ -83,24 +89,53 @@ public class AgenteTMDB extends Agent {
     }
     
     private ArrayList<Pelicula> generarPeliculasDePrueba(FiltrosUsuario filtros) {
-        ArrayList<Pelicula> lista = new ArrayList<>();
-        
-        // 1. Obtenemos el primer género solicitado de la lista (por simplicidad en la prueba)
-        String generoBuscado = (filtros.getGeneros() != null && !filtros.getGeneros().isEmpty()) 
-                ? filtros.getGeneros().get(0) 
-                : "General";
 
-        // 2. Preparamos una lista de géneros simulada que contenga el género buscado y la fuente "TMDB"
-        List<String> generosSimulados = new ArrayList<>();
-        generosSimulados.add(generoBuscado);
-        generosSimulados.add("TMDB"); // Añadimos la procedencia como un tag de género provisional
+        // Se que asi poner la api esta mal, pero se puede resetear y para hacer pruebas de momento asi xd
+        // De momomento solo devuelve peliculas de accion, tengo que cambiar esto lo se pero es para probar que funciona bien
+        String resultado = conseguirInfoApi("https://api.themoviedb.org/3/discover/movie?api_key=e11e7daebd9c3bd388a4c6edcc7b6cb9&with_genres=28&sort_by=popularity.desc&page=1");
 
-        // 3. Añadimos los datos de prueba usando estrictamente tu constructor original: (String, List<String>, int)
-        lista.add(new Pelicula("The TMDB " + generoBuscado + " Masterpiece", generosSimulados, 8));
-        lista.add(new Pelicula("Crónicas de " + filtros.getAnio(), generosSimulados, 7));
-        lista.add(new Pelicula("Aventura Espacial en " + generoBuscado, generosSimulados, 6));
-        
-        return lista;
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        Gson gson = gsonBuilder.create();
+
+        ConjuntoTMDB respuesta = gson.fromJson(resultado, ConjuntoTMDB.class);
+        List<PeliculaTMDB> peliculas = respuesta.getResults(); // Aqui le digo que solo quiero devuelva la lista de pelis, que es lo que me interesa, y ya luego pues se lo mando al planificador o lo que sea, pero bueno
+
+        ArrayList<Pelicula> listapeliculasfinal = new ArrayList<>();
+        for (PeliculaTMDB p : peliculas) {
+            System.out.println(p);// Esto es solo para testear/debugear que devuelve bien las pelis para el modelo pelis de TMDB :)
+            // Y ahora las convierto a formato Pelicula normal y las aniado
+            listapeliculasfinal.add(new Pelicula(p.getNombre(), p.getGeneros(), (int) p.getPuntuacion())); // Habria que cambiar lo de int a float porque hay puntuaciones con decimales, comentar luego en wasap
+        }
+
+
+        return listapeliculasfinal;
+    }
+
+    // Es una clase aux para como bien dice el nombre, obtener el resultado de la llamada api, tal vez deberiamos mover a una clase auxiliar no se
+    public static String conseguirInfoApi(String url) {
+
+        URL pagina = null;// Esto para cargar la url
+        StringBuilder respuesta = new StringBuilder();
+        String lineac;
+        try {
+
+            pagina = new URL(url);
+            URLConnection conexion = pagina.openConnection(); // Para abrir conexion
+            BufferedReader bufin = new BufferedReader(new InputStreamReader(conexion.getInputStream()));
+
+            // linea por linea cargo como en C
+            while ((lineac = bufin.readLine()) != null) {
+                respuesta.append(lineac);
+            }
+
+            bufin.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        return respuesta.toString();
     }
     
  // desregistrar el agente cuando se destruye

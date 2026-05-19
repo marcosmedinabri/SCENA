@@ -9,6 +9,6 @@ public class AlgoritmoPlanificador {
 		 List<Pelicula> resultado = new ArrayList<>();
 		 
 		 resultado.add(new Pelicula("Kung Fu Panda", Arrays.asList("acción", "infantil"), 4 ) );
-		 return resultado;
+		 return listaPelis;
 	 }
 }
