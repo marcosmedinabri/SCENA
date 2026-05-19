@@ -1,15 +1,14 @@
 package es.upm.si.practica;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Arrays;
 
 public class AlgoritmoPlanificador {
-	 public static ArrayList<Pelicula> generarListaPelis(List<Pelicula> listaPelis, FiltrosUsuario filtros) {
-		 ArrayList<Pelicula> retultado = "Ranking";
+	 public static List<Pelicula> generarListaPelis(List<Pelicula> listaPelis, FiltrosUsuario filtros) {
+		 List<Pelicula> resultado = new ArrayList<>();
+		 
+		 resultado.add(new Pelicula("Kung Fu Panda", Arrays.asList("acción", "infantil"), 4.3 ) );
 		 return resultado;
 	 }
 }
