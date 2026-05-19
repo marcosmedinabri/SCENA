@@ -1,5 +1,9 @@
 package es.upm.si.practica;
 
+import java.util.ArrayList;
+
+import javax.swing.SwingUtilities;
+
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.OneShotBehaviour;
@@ -9,28 +13,30 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
+import jade.lang.acl.UnreadableException;
 
 public class AgenteInterfaz extends Agent {
 
+    private BuscadorGUI gui;
+
     @Override
     protected void setup() {
-        System.out.println("agente de Interfaz " + getLocalName() + " iniciada.");
+        System.out.println("Agente Interfaz " + getLocalName() + " iniciado.");
+        
+        // Arrancamos la interfaz gráfica (GUI) en el hilo de Swing
+        SwingUtilities.invokeLater(() -> {
+            gui = new BuscadorGUI(this);
+            gui.mostrar();
+        });
+    }
 
-        addBehaviour(new OneShotBehaviour(this) { //esto es para ejecutarse solo una vez
+    // Método llamado por la GUI cuando el usuario hace clic en el botón
+    public void comenzarBusqueda(String genero, int anio) {
+        addBehaviour(new OneShotBehaviour(this) {
             @Override
             public void action() {
                 
-            	/*Busca en el Directorio Facilitador agente que de servicio "planificacion"*/
-            	
+                // 1. Buscar en el Directorio Facilitador al agente Planificador
                 DFAgentDescription desc = new DFAgentDescription();
                 ServiceDescription sd = new ServiceDescription();
                 sd.setType("planificacion");
@@ -39,91 +45,80 @@ public class AgenteInterfaz extends Agent {
                 AID planificadorAID = null;
                 
                 try {
-                    System.out.println(getLocalName() + ": se está buscando el agente...");
                     DFAgentDescription[] result = DFService.search(myAgent, desc);
                     if (result.length > 0) {
-                        planificadorAID = result[0].getName(); // Se coge el primer agente encontrado (por si acaso queremos añadir más, no se xd)
-                        System.out.println("Agente planificador de tareas encontrado!: " + planificadorAID.getLocalName());
+                        planificadorAID = result[0].getName();
                     }
                 } catch (FIPAException fe) {
                     fe.printStackTrace();
                 }
                 
-                /*Envia al agentePlanificador un mensaje REQUEST con tareas*/
-                
                 if (planificadorAID != null) {
+                    // 2. Empaquetar los datos del usuario usando la clase FiltrosUsuario
+                    FiltrosUsuario filtros = new FiltrosUsuario(genero, anio);
 
-                    String respuesta = "Si";
-                    List<Tarea> listatareas = new ArrayList<>();
-
-                    while(respuesta.equalsIgnoreCase("Si")) {
-                        // Aqui va a ir la logica de preguntar al usuario por los datos, de momento terminal, luego pasar a swing ej clase
-                        Scanner escaner = new Scanner(System.in);
-
-                        System.out.println("Bienvenido al sistema inteligente para planificar tareas.");
-
-                        System.out.println("Porfavor, introduzca el nombre de la tarea.");
-                        String nombretarea = escaner.nextLine();
-
-                        System.out.println("Introduzca del 1 al 5 como de importante es esa tarea.");
-                        int importante = Integer.parseInt(escaner.nextLine());
-
-                        System.out.println("Introduzca la fecha final para la tarea con el formato (DD-MM-YYYY).");
-                        String fechalimite = escaner.nextLine();
-
-                        System.out.println("Introduzca el numero de horas que se le quiere dedicar.");
-                        int horastotales = escaner.nextInt();
-                        escaner.nextLine();
-
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-                        sdf.setLenient(false); // Esto es para evitar fechas erroneas por si acaso segun documentacion de java
-
-                        Date fechaformateada;
-                        try {
-                            fechaformateada = sdf.parse(fechalimite);
-                        } catch (ParseException e) {
-                            System.out.println("Error con el formato de la fecha, revisar.");
-                            throw new RuntimeException(e);
-                        }
-
-                        Tarea tarea = new Tarea(nombretarea, importante, fechaformateada, horastotales);
-                        System.out.println("Tarea registrada: " + tarea);
-                        listatareas.add(tarea);
-
-                        System.out.println("¿Tienes mas tareas pendientes por añadir? Si/No");
-                        respuesta = escaner.nextLine().trim();
-
-                    }
-
-
-                    // Preparar el mensaje
+                    // 3. Preparar y enviar el mensaje REQUEST
                     ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
                     request.addReceiver(planificadorAID);
+                    try {
+                        request.setContentObject(filtros); // Enviamos el objeto serializado
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     
-                    /*2. AQUI RECOGER LOS DATOS DEL USUAIO"*/
-                    request.setContent("Comedia, Aventuras, Acción, 2025");
-                    request.setConversationId("planificacion-semana-1"); //para identificar las conversaciones despues (esto hay q automatizarlo despues)
+                    String convId = "planificacion-" + System.currentTimeMillis();
+                    request.setConversationId(convId); 
 
                     send(request);
-                    System.out.println(getLocalName() + " ha enviado los datos");
+                    System.out.println(getLocalName() + " ha enviado los filtros al Planificador.");
 
-                    // Se queda bloaqueado esperando la respuesta
-                    // Queremos una respuesta a esta conversación y se espera el id "planificacion-semanal-1"
-                    MessageTemplate mt = MessageTemplate.MatchConversationId("planificacion-semanal-1");
+                    // 4. Recepción bloqueante: Esperamos a que el Planificador fusione todo
+                    MessageTemplate mt = MessageTemplate.MatchConversationId(convId);
+                    ACLMessage reply = blockingReceive(mt, 8000); // Timeout de 8 segundos por seguridad
                     
-                    System.out.println(getLocalName() + " esperando resultados de la planificación (bloqueado)...");
-                    // El agente se detiene aquí hasta que llega un mensaje que cumpla el template
-                    ACLMessage reply = blockingReceive(mt); 
-                    
-                    /*IMPRIME EL RESULTADO*/
-                    //CAMBIAR MAS ADELANTE: Esto hay que hacerlo en un agente de output
                     if (reply != null) {  
-                        System.out.println(getLocalName() + " RESULTADO FINAL MOSTRADO EN GUI: " + reply.getContent());
+                        try {
+                            // Extraemos la lista de películas resultante
+                            @SuppressWarnings("unchecked")
+                            ArrayList<Pelicula> ranking = (ArrayList<Pelicula>) reply.getContentObject();
+                            
+                            // Renderizamos el HTML para la GUI
+                            String htmlFinal = renderizarHTML(ranking);
+                            gui.mostrarResultado(htmlFinal);
+                            
+                        } catch (UnreadableException e) {
+                            gui.mostrarResultado("<html><body>❌ Error al decodificar la lista de películas.</body></html>");
+                        }
+                    } else {
+                        gui.mostrarResultado("<html><body>❌ Timeout: El sistema está tardando demasiado en responder.</body></html>");
                     }
                 } else {
-                    System.out.println("No se encontró ningún agente planificador disponible.");
+                    gui.mostrarResultado("<html><body>❌ Error: No se encontró ningún agente planificador activo.</body></html>");
                 }
             }
         });
+    }
+
+    // Transforma el ArrayList de Peliculas en tarjetas HTML visuales
+    private String renderizarHTML(ArrayList<Pelicula> peliculas) {
+        if (peliculas == null || peliculas.isEmpty()) {
+            return "<html><body><h3 style='color:#CC0000;'>Sin Resultados</h3><p>No se encontraron películas para esos filtros.</p></body></html>";
+        }
+
+        StringBuilder html = new StringBuilder();
+        html.append("<html><body style='font-family:sans-serif; margin:15px;'>");
+        html.append("<h2 style='color:#1A5276; border-bottom: 2px solid #2980B9; padding-bottom:5px;'>🎬 TOP RECOMENDACIONES</h2>");
+
+        for (int i = 0; i < peliculas.size(); i++) {
+            Pelicula peli = peliculas.get(i);
+            html.append("<div style='background-color:#EBF5FB; border-left:6px solid #2980B9; padding:12px; margin-bottom:12px; border-radius:4px;'>");
+            html.append("<b style='font-size:14px; color:#2C3E50;'>#").append(i + 1).append(" - ").append(peli.getNombre()).append("</b><br>");
+            html.append("<span style='color:#148F77;'><b>Match Final: ").append(peli.getPuntuacion()).append("%</b></span> | ");
+            html.append("<span style='color:#7D6608;'><b>Géneros: ").append(peli.getGeneros().toString()).append("</b></span><br>");
+            html.append("</div>");
+        }
+
+        html.append("</body></html>");
+        return html.toString();
     }
 }
