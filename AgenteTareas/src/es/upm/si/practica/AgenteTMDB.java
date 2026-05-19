@@ -6,7 +6,9 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -90,9 +92,48 @@ public class AgenteTMDB extends Agent {
     
     private ArrayList<Pelicula> generarPeliculasDePrueba(FiltrosUsuario filtros) {
 
+        // Esto lo tengo que hacer asi porque para buscar en la api, se busca con los numeritos en vez de las palabras, asique un diccionario y ya esta
+        Map<String,String> mapafiltros = new HashMap<>();
+        mapafiltros.put("acción", "28");
+        mapafiltros.put("aventura", "12");
+        mapafiltros.put("animación", "16");
+        mapafiltros.put("comedia", "35");
+        mapafiltros.put("crimen", "80");
+        mapafiltros.put("documental", "99");
+        mapafiltros.put("drama", "18");
+        mapafiltros.put("familiar", "10751");
+        mapafiltros.put("fantasía", "14");
+        mapafiltros.put("historia", "36");
+        mapafiltros.put("terror", "27");
+        mapafiltros.put("música", "10402");
+        mapafiltros.put("misterio", "9648");
+        mapafiltros.put("romance", "10749");
+        mapafiltros.put("ciencia ficción", "878");
+        mapafiltros.put("ciencia-ficción", "878");
+        mapafiltros.put("película de TV", "10770");
+        mapafiltros.put("suspense", "53");
+        mapafiltros.put("guerra", "10752");
+
+
+
+        StringBuilder generosfiltrados = new StringBuilder();
+
+        for (String genero : filtros.getGeneros()) {
+            String idGenero = mapafiltros.get(genero.trim().toLowerCase());
+
+            if (idGenero != null) {
+                if (generosfiltrados.length() > 0) {
+                    generosfiltrados.append(",");
+                }
+                generosfiltrados.append(idGenero);
+            }
+        }
+
+
+
         // Se que asi poner la api esta mal, pero se puede resetear y para hacer pruebas de momento asi xd
         // De momomento solo devuelve peliculas de accion, tengo que cambiar esto lo se pero es para probar que funciona bien
-        String resultado = conseguirInfoApi("https://api.themoviedb.org/3/discover/movie?api_key=e11e7daebd9c3bd388a4c6edcc7b6cb9&with_genres=28&sort_by=popularity.desc&page=1");
+        String resultado = conseguirInfoApi("https://api.themoviedb.org/3/discover/movie?api_key=e11e7daebd9c3bd388a4c6edcc7b6cb9&with_genres=" + generosfiltrados +"&sort_by=popularity.desc&page=1");
 
 
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -101,15 +142,50 @@ public class AgenteTMDB extends Agent {
         ConjuntoTMDB respuesta = gson.fromJson(resultado, ConjuntoTMDB.class);
         List<PeliculaTMDB> peliculas = respuesta.getResults(); // Aqui le digo que solo quiero devuelva la lista de pelis, que es lo que me interesa, y ya luego pues se lo mando al planificador o lo que sea, pero bueno
 
+
+        // Necesito el mapafiltros a la inversa para que los generos de Peliculas no esten como numeros, sino como palabras como tal, que la api devuelve numeros >:(
+        Map<String, String> mapaGeneros = new HashMap<>();
+        for (Map.Entry<String, String> entrada : mapafiltros.entrySet()) {
+            mapaGeneros.put(entrada.getValue(), entrada.getKey());
+        }
+
         ArrayList<Pelicula> listapeliculasfinal = new ArrayList<>();
         for (PeliculaTMDB p : peliculas) {
-            System.out.println(p);// Esto es solo para testear/debugear que devuelve bien las pelis para el modelo pelis de TMDB :)
+
+            // Filtrar por anio lo que dan
+            int anioPelicula = obtenerAnioDesdeFecha(p.getFechaEstreno());
+            if (anioPelicula < filtros.getAnio()) {
+                continue;
+            }
+
+            //Cambiar de numero a palabra en lo de los generos
+            List<String> generosNombres = new ArrayList<>();
+            for (String idGenero : p.getGeneros()) {
+                String nombreGenero = mapaGeneros.get(idGenero);
+                if (nombreGenero != null) {
+                    generosNombres.add(nombreGenero);
+                }
+            }
+
+            //System.out.println(p);// Esto es solo para testear/debugear que devuelve bien las pelis para el modelo pelis de TMDB :)
             // Y ahora las convierto a formato Pelicula normal y las aniado
-            listapeliculasfinal.add(new Pelicula(p.getNombre(), p.getGeneros(), (int) p.getPuntuacion())); // Habria que cambiar lo de int a float porque hay puntuaciones con decimales, comentar luego en wasap
+            listapeliculasfinal.add(new Pelicula(p.getNombre(), generosNombres, (int) (p.getPuntuacion())*10)); // Habria que cambiar lo de int a float porque hay puntuaciones con decimales, comentar luego en wasap
         }
 
 
         return listapeliculasfinal;
+    }
+
+    //Metodo auxiliar para ayudar al filtrado por anios
+    private int obtenerAnioDesdeFecha(String fecha) {
+        if (fecha == null || fecha.isBlank()) {
+            return Integer.MAX_VALUE; // para no descartar películas sin fecha porsiacaso
+        }
+        try {
+            return Integer.parseInt(fecha.substring(0, 4));// Pillo los 4 primeros numeros del string = solo el anio
+        } catch (Exception e) {
+            return Integer.MAX_VALUE;
+        }
     }
 
     // Es una clase aux para como bien dice el nombre, obtener el resultado de la llamada api, tal vez deberiamos mover a una clase auxiliar no se

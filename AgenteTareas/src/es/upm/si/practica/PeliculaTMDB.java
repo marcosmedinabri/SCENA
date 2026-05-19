@@ -17,6 +17,8 @@ public class PeliculaTMDB implements Serializable {
     private List<String> generos;
     @SerializedName("vote_average")
     private float puntuacion;
+    @SerializedName("release_date")
+    private String fechaEstreno;
 
     // Constructor vacío (importante para serialización)
     public PeliculaTMDB() {
@@ -50,8 +52,16 @@ public class PeliculaTMDB implements Serializable {
         return puntuacion;
     }
 
-    public void setPuntuacion(int puntuacion) {
+    public void setPuntuacion(float puntuacion) {
         this.puntuacion = puntuacion;
+    }
+
+    public String getFechaEstreno() {
+        return fechaEstreno;
+    }
+
+    public void setFechaEstreno(String fechaEstreno) {
+        this.fechaEstreno = fechaEstreno;
     }
 
     // toString para debug y envío
