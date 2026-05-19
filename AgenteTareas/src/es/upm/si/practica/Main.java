@@ -6,27 +6,26 @@ import jade.core.Runtime;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 
+//Así no hay que configurar todo el rato el run configuration :P
 public class Main { 
     public static void main(String[] args) throws Exception {
-        Runtime rt = Runtime.instance(); 
-        Profile p = new ProfileImpl(); 
+        Runtime rt = Runtime.instance(); //instancia del runtime, creo que gestiona los contenedores y servicios y todo eso
+        Profile p = new ProfileImpl(); //perfil de configuracion 
      
-        p.setParameter(Profile.GUI, "true"); 
-        p.setParameter(Profile.LOCAL_PORT, "1201"); 
-        AgentContainer container = rt.createMainContainer(p); 
+        p.setParameter(Profile.GUI, "true"); //para abrir la interfaz de JADE
+        p.setParameter(Profile.LOCAL_PORT, "1201"); //puerto para JADE pero hay que ir cambiandolo porque a veces no funciona :/
+        AgentContainer container = rt.createMainContainer(p); //crear el contenedor principal 
 
-        // NUESTROS AGENTES
+        // NUESTROS AGENTE!!!!
         AgentController planificador = container.createNewAgent("Planificador", AgentePlanificador.class.getName(), null);
-        AgentController sensorTMDB   = container.createNewAgent("AgenteTMDB", AgenteTMDB.class.getName(), null);
-        AgentController interfaz     = container.createNewAgent("InterfazUsuario", AgenteInterfaz.class.getName(), null);
+        AgentController interfaz = container.createNewAgent("InterfazUsuario", AgenteInterfaz.class.getName(), null);
 
-        // Arrancamos primero el cerebro y los sensores para que se registren en el DF
+        // Arrancamos primero el planificador para que le dé tiempo a registrarse en el DF
         planificador.start();
-        sensorTMDB.start();
         
-        Thread.sleep(600); 
+        // Pausa cortita para asegurar el registro antes de la búsqueda
+        Thread.sleep(500); 
         
-        // Arrancamos la interfaz gráfica la última
-        interfaz.start(); 
+        interfaz.start(); //se lanza, a tope
     }
 }

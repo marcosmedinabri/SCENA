@@ -10,13 +10,5 @@ public class FiltrosUsuario implements Serializable {
         this.genero = genero;
         this.anio = anio;
     }
-    
-    // Getters necesarios para que los agentes puedan leer los datos
-    public String getGenero() {
-        return genero;
-    }
-
-    public int getAnio() {
-        return anio;
-    }
+    //Getters y Setters
 }
