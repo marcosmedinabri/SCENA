@@ -1,6 +1,18 @@
 package es.upm.si.practica;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 
 
 public class AgenteTMDB extends Agent {
@@ -73,15 +85,20 @@ public class AgenteTMDB extends Agent {
     private ArrayList<Pelicula> generarPeliculasDePrueba(FiltrosUsuario filtros) {
         ArrayList<Pelicula> lista = new ArrayList<>();
         
-        // Obtenemos el primer género solicitado de la lista (por simplicidad en la prueba)
+        // 1. Obtenemos el primer género solicitado de la lista (por simplicidad en la prueba)
         String generoBuscado = (filtros.getGeneros() != null && !filtros.getGeneros().isEmpty()) 
                 ? filtros.getGeneros().get(0) 
                 : "General";
 
-        // Añadimos datos de prueba dinámicos concatenando el género y año elegidos por el usuario
-        lista.add(new Pelicula("The TMDB " + generoBuscado + " Masterpiece", 8.7, "TMDB"));
-        lista.add(new Pelicula("Crónicas de " + filtros.getAnio(), 7.4, "TMDB"));
-        lista.add(new Pelicula("Aventura Espacial en " + generoBuscado, 6.2, "TMDB"));
+        // 2. Preparamos una lista de géneros simulada que contenga el género buscado y la fuente "TMDB"
+        List<String> generosSimulados = new ArrayList<>();
+        generosSimulados.add(generoBuscado);
+        generosSimulados.add("TMDB"); // Añadimos la procedencia como un tag de género provisional
+
+        // 3. Añadimos los datos de prueba usando estrictamente tu constructor original: (String, List<String>, int)
+        lista.add(new Pelicula("The TMDB " + generoBuscado + " Masterpiece", generosSimulados, 8));
+        lista.add(new Pelicula("Crónicas de " + filtros.getAnio(), generosSimulados, 7));
+        lista.add(new Pelicula("Aventura Espacial en " + generoBuscado, generosSimulados, 6));
         
         return lista;
     }
