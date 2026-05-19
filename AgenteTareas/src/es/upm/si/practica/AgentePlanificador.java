@@ -115,7 +115,7 @@ public class AgentePlanificador extends Agent {
             requestSensores.setConversationId(idConversacion);
             try {
             	requestSensores.setContentObject(filtros);
-            }catch() {
+            }catch(Exception e){
             	System.err.println("Error al serializar filtros.");
                 e.printStackTrace();
                 enviarRespuestaError("Error al procesar los filtros.");

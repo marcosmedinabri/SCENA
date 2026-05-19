@@ -9,6 +9,7 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -76,7 +77,11 @@ public class AgenteInterfaz extends Agent {
                     request.addReceiver(planificadorAID);
                     
                     /*2. AQUI RECOGER LOS DATOS DEL USUAIO"*/
-                    request.setContentObject(filtros);
+                    try {
+						request.setContentObject(filtros);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
                     request.setConversationId("planificacion-1"); //para identificar las conversaciones despues (esto hay q automatizarlo despues)
 
                     send(request);
@@ -93,7 +98,12 @@ public class AgenteInterfaz extends Agent {
                     /*IMPRIME EL RESULTADO*/
                     //CAMBIAR MAS ADELANTE: Esto hay que hacerlo en un agente de output
                     if (reply != null) {  
-                        System.out.println(getLocalName() + " RESULTADO FINAL MOSTRADO EN GUI: " + reply.getContentObject());
+                        try {
+							System.out.println(getLocalName() + " RESULTADO FINAL MOSTRADO EN GUI: " + reply.getContentObject());
+						} catch (UnreadableException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
                     }
                 } else {
                     System.out.println("No se encontró ningún agente planificador disponible.");
