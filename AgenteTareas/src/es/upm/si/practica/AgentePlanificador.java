@@ -2,7 +2,9 @@ package es.upm.si.practica;
 
 import jade.core.Agent;
 
+import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -11,6 +13,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,29 +44,27 @@ public class AgentePlanificador extends Agent {
             @Override
             public void action() {
                 // Espera las peticiones (REQUEST)
+            	
                 MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
                 ACLMessage msg = receive(mt); //mensaje del AgenteInterfaz
                 
                 if (msg != null) {
-                    System.out.println(getLocalName() + " ha recibido tareas para procesar");
+                    System.out.println(getLocalName() + " ha recibido filtros para procesar de la interfaz");
 
-                    /*AQUI IRIA LA LOGICA DE LA ORDENACION Y ESO*/
                     try {
-						String filtrosRecibidos = (String)msg.getContentObject(); //AQUI NO TENGO NI IDEA DE COMO RECIBIR LO DE LA INTERFAZ
-						myAgent.addBehaviour(new GestionarConsultaSensores(msg, filtros)); //para comunicarse con los buscadores
-						//List<Pelicula>resultadoPlanificacion = AlgoritmoPlanificador.generarListaPelis(filtrosRecibidos); //se llama al algoritmo
-						
+						FiltrosUsuario filtrosRecibidos = (FiltrosUsuario)msg.getContentObject(); //se recogen los filtros
+						myAgent.addBehaviour(new GestionarConsultaSensores(msg, filtrosRecibidos)); //para comunicarse con los buscadores
+
 					} catch (UnreadableException e) {
 						System.err.println("Error al deserializar el objeto: el formato de bytes no es válido.");
 						e.printStackTrace();
+						// Enviar respuesta de error si falla la lectura de los filtrod
+                        ACLMessage reply = msg.createReply();
+                        reply.setPerformative(ACLMessage.FAILURE);
+                        reply.setContent("Error en el formato de datos de la petición.");
+                        send(reply);
 					}
                     
-                    /*RESPUESTA A QUIEN HA ENVIADO LA PETICION*/
-                    ACLMessage reply = msg.createReply(); //incluye el identificador
-                    reply.setPerformative(ACLMessage.INFORM); //devuelve el resultado
-                    reply.setContent(resultadoPlanificacion);
-                    send(reply);
-                    System.out.println(getLocalName() + " ha enviado la planificación generada.");
                 } else {
                     // Si no hay mensajes, bloqueamos el comportamiento hasta que llegue uno
                     block();
@@ -112,7 +113,14 @@ public class AgentePlanificador extends Agent {
             //Enviar la petición de filtrado a cada sensor encontrado
             ACLMessage requestSensores = new ACLMessage(ACLMessage.REQUEST);
             requestSensores.setConversationId(idConversacion);
-            requestSensores.setContentObject(filtros);
+            try {
+            	requestSensores.setContentObject(filtros);
+            }catch() {
+            	System.err.println("Error al serializar filtros.");
+                e.printStackTrace();
+                enviarRespuestaError("Error al procesar los filtros.");
+                return;
+            }
             
             for (AID sensorAID : sensoresEncontrados) {
                 requestSensores.addReceiver(sensorAID);
@@ -132,6 +140,7 @@ public class AgentePlanificador extends Agent {
                 ACLMessage respuestaSensor = myAgent.blockingReceive(mtRespuestas);
                 if (respuestaSensor != null) {
                     try {
+                    	@SuppressWarnings("unchecked")
                         // Cada sensor devuelve un ArrayList<Pelicula>
                         List<Pelicula> pelisSensor = (List<Pelicula>) respuestaSensor.getContentObject();
                         if (pelisSensor != null) {
@@ -146,13 +155,13 @@ public class AgentePlanificador extends Agent {
 
             // Aplicar el algoritmo inteligente
             // Cambiamos el String por la lista final tipada que procesará tu GUI
-            ArrayList<Pelicula> rankingFinal = AlgoritmoPlanificador.generarListaPelis(todasLasPeliculas, filtros);
-
+            List<Pelicula> rankingFinal = AlgoritmoPlanificador.generarListaPelis(todasLasPeliculas, filtros);
+            
             // Enviar el resultado final empaquetado de vuelta al AgenteInterfaz
             ACLMessage reply = mensajeInterfaz.createReply();
             reply.setPerformative(ACLMessage.INFORM);
             try {
-                reply.setContentObject(rankingFinal); // Enviamos el objeto binario estructurado
+                reply.setContentObject((ArrayList<Pelicula>)rankingFinal); // Enviamos el objeto binario estructurado
                 send(reply);
                 System.out.println(getLocalName() + " ha enviado el ranking final fusionado a la interfaz.");
             } catch (Exception e) {
