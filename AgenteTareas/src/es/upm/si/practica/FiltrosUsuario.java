@@ -11,14 +11,16 @@ public class FiltrosUsuario implements Serializable {
     
     private List<String> generos;
     private int anio;
+    private String preferencia;
 
     public FiltrosUsuario() {
         this.generos = new ArrayList<>();
     }
 
-    public FiltrosUsuario(List<String> generos, int anio) {
+    public FiltrosUsuario(List<String> generos, int anio, String preferencia) {
         this.generos = generos;
         this.anio = anio;
+        this.preferencia = preferencia;
     }
 
 
@@ -38,6 +40,14 @@ public class FiltrosUsuario implements Serializable {
 
     public void setAnio(int anio) {
         this.anio = anio;
+    }
+
+    public String getPreferencia() {
+        return preferencia;
+    }
+
+    public void setPreferencia(String preferencia) {
+        this.preferencia = preferencia;
     }
 
     public void addGenero(String genero) {

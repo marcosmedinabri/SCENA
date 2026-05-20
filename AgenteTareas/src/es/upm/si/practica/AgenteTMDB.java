@@ -133,7 +133,7 @@ public class AgenteTMDB extends Agent {
 
         // Se que asi poner la api esta mal, pero se puede resetear y para hacer pruebas de momento asi xd
         // De momomento solo devuelve peliculas de accion, tengo que cambiar esto lo se pero es para probar que funciona bien
-        String resultado = conseguirInfoApi("https://api.themoviedb.org/3/discover/movie?api_key=e11e7daebd9c3bd388a4c6edcc7b6cb9&with_genres=" + generosfiltrados +"&sort_by=popularity.desc&page=1");
+        String resultado = conseguirInfoApi("https://api.themoviedb.org/3/discover/movie?api_key=e11e7daebd9c3bd388a4c6edcc7b6cb9&with_genres=" + generosfiltrados +"&sort_by=popularity.desc&page=1&language=es-ES");
 
 
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -169,7 +169,7 @@ public class AgenteTMDB extends Agent {
 
             //System.out.println(p);// Esto es solo para testear/debugear que devuelve bien las pelis para el modelo pelis de TMDB :)
             // Y ahora las convierto a formato Pelicula normal y las aniado
-            listapeliculasfinal.add(new Pelicula(p.getNombre(), generosNombres, (int) (p.getPuntuacion())*10)); // Habria que cambiar lo de int a float porque hay puntuaciones con decimales, comentar luego en wasap
+            listapeliculasfinal.add(new Pelicula(p.getNombre(), generosNombres, (int) (p.getPuntuacion())*10, p.getSinopsis())); // Habria que cambiar lo de int a float porque hay puntuaciones con decimales, comentar luego en wasap
         }
 
 
