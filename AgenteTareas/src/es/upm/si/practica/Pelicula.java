@@ -11,15 +11,17 @@ public class Pelicula implements Serializable {
     private String nombre;
     private List<String> generos;
     private int puntuacion;
+    private String sinopsis;
 
     // Constructor vacío (importante para serialización)
     public Pelicula() {
     }
 
-    public Pelicula(String nombre, List<String> generos, int puntuacion) {
+    public Pelicula(String nombre, List<String> generos, int puntuacion,  String sinopsis) {
         this.nombre = nombre;
         this.generos = generos;
         this.puntuacion = puntuacion;
+        this.sinopsis = sinopsis;
     }
 
     // GETTERS y SETTERS
@@ -48,13 +50,23 @@ public class Pelicula implements Serializable {
         this.puntuacion = puntuacion;
     }
 
+    public String getSinopsis() {
+        return sinopsis;
+    }
+
+    public void setSinopsis(String sinopsis) {
+        this.sinopsis = sinopsis;
+    }
+
     // toString para debug y envío
+
     @Override
     public String toString() {
         return "Pelicula{" +
                 "nombre='" + nombre + '\'' +
                 ", generos=" + generos +
                 ", puntuacion=" + puntuacion +
+                ", sinopsis='" + sinopsis + '\'' +
                 '}';
     }
 }

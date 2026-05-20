@@ -8,7 +8,7 @@ public class AlgoritmoPlanificador {
 	 public static List<Pelicula> generarListaPelis(List<Pelicula> listaPelis, FiltrosUsuario filtros) {
 		 List<Pelicula> resultado = new ArrayList<>();
 		 
-		 resultado.add(new Pelicula("Kung Fu Panda", Arrays.asList("acción", "infantil"), 4 ) );
+		 resultado.add(new Pelicula("Kung Fu Panda", Arrays.asList("acción", "infantil"), 4 ,"Pelicual de animales sobre la lucha y artes marciales") );
 		 return listaPelis;
 	 }
 }

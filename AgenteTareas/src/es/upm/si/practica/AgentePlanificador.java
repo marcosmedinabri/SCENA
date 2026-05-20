@@ -153,7 +153,14 @@ public class AgentePlanificador extends Agent {
                 }
             }
 
-            // Aplicar el algoritmo inteligente
+            /*
+            TODO: Hacer aqui la llamada a un agente (ej: AgenteProcesaPreferencias) para procesar la frase de preferencias del usuario y convertirlas
+            en palabras claves para el algoritmo de planificador del ranking
+             */
+
+
+
+            // Aplicar el algoritmo inteligente, que tendra en cuenta las palabras claves del usuario de preferencias, valoraciones y generos de la peli
             // Cambiamos el String por la lista final tipada que procesará tu GUI
             List<Pelicula> rankingFinal = AlgoritmoPlanificador.generarListaPelis(todasLasPeliculas, filtros);
             

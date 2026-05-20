@@ -69,8 +69,12 @@ public class AgenteInterfaz extends Agent {
                     
                     System.out.println("Introduzca el año a partrir del cual quiere obtener la lista.");
                     int anio = Integer.parseInt(escaner.nextLine());
+
+                    System.out.println("Describe brevemente que preferencia/tema quieres ver.");
+                    String preferencia = escaner.nextLine();
+                    // Por ejemplo: "Una pelicula de robots del futuro."
                     
-                    FiltrosUsuario filtros = new FiltrosUsuario(listaGeneros, anio);
+                    FiltrosUsuario filtros = new FiltrosUsuario(listaGeneros, anio, preferencia);
                     
                     // Preparar el mensaje
                     ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
