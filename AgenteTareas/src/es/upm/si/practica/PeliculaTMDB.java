@@ -19,15 +19,19 @@ public class PeliculaTMDB implements Serializable {
     private float puntuacion;
     @SerializedName("release_date")
     private String fechaEstreno;
+    @SerializedName("overview")
+    private String sinopsis;
 
     // Constructor vacío (importante para serialización)
     public PeliculaTMDB() {
     }
 
-    public PeliculaTMDB(String nombre, List<String> generos, float puntuacion) {
+    public PeliculaTMDB(String nombre, List<String> generos, float puntuacion, String fechaEstreno, String sinopsis) {
         this.nombre = nombre;
         this.generos = generos;
         this.puntuacion = puntuacion;
+        this.fechaEstreno = fechaEstreno;
+        this.sinopsis = sinopsis;
     }
 
     // GETTERS y SETTERS
@@ -64,13 +68,22 @@ public class PeliculaTMDB implements Serializable {
         this.fechaEstreno = fechaEstreno;
     }
 
-    // toString para debug y envío
+    public String getSinopsis() {
+        return sinopsis;
+    }
+
+    public void setSinopsis(String sinopsis) {
+        this.sinopsis = sinopsis;
+    }
+
     @Override
     public String toString() {
-        return "Pelicula{" +
+        return "PeliculaTMDB{" +
                 "nombre='" + nombre + '\'' +
                 ", generos=" + generos +
                 ", puntuacion=" + puntuacion +
+                ", fechaEstreno='" + fechaEstreno + '\'' +
+                ", sinopsis='" + sinopsis + '\'' +
                 '}';
     }
 }
