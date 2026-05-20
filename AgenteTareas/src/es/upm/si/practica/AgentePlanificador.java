@@ -23,7 +23,7 @@ public class AgentePlanificador extends Agent {
     @Override
     protected void setup() {
         System.out.println("Planificador " + getLocalName() + " iniciado.");
-
+        
         /*AQUI EL AGENTE SE REHISTRA EN EL DIRECTORIO FACILITADOR COMO TIPO "plaificacion"*/
         DFAgentDescription descAgente = new DFAgentDescription();
         descAgente.setName(getAID());
@@ -50,9 +50,10 @@ public class AgentePlanificador extends Agent {
                 
                 if (msg != null) {
                     System.out.println(getLocalName() + " ha recibido filtros para procesar de la interfaz");
-
+   
                     try {
 						FiltrosUsuario filtrosRecibidos = (FiltrosUsuario)msg.getContentObject(); //se recogen los filtros
+						
 						myAgent.addBehaviour(new GestionarConsultaSensores(msg, filtrosRecibidos)); //para comunicarse con los buscadores
 
 					} catch (UnreadableException e) {
@@ -162,13 +163,13 @@ public class AgentePlanificador extends Agent {
 
             // Aplicar el algoritmo inteligente, que tendra en cuenta las palabras claves del usuario de preferencias, valoraciones y generos de la peli
             // Cambiamos el String por la lista final tipada que procesará tu GUI
-            List<Pelicula> rankingFinal = AlgoritmoPlanificador.generarListaPelis(todasLasPeliculas, filtros);
+            AlgoritmoPlanificador.generarListaPelis(todasLasPeliculas, filtros);
             
             // Enviar el resultado final empaquetado de vuelta al AgenteInterfaz
             ACLMessage reply = mensajeInterfaz.createReply();
             reply.setPerformative(ACLMessage.INFORM);
             try {
-                reply.setContentObject((ArrayList<Pelicula>)rankingFinal); // Enviamos el objeto binario estructurado
+                reply.setContentObject((ArrayList<Pelicula>)todasLasPeliculas); // Enviamos el objeto binario estructurado
                 send(reply);
                 System.out.println(getLocalName() + " ha enviado el ranking final fusionado a la interfaz.");
             } catch (Exception e) {
