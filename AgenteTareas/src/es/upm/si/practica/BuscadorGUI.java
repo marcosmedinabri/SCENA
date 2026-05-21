@@ -5,11 +5,11 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -28,9 +28,8 @@ public class BuscadorGUI {
     private static final Color INPUT_BG   = new Color(25, 25, 50);
     private static final Color INPUT_BDR  = new Color(70, 70, 110);
 
-    private static final String OMDB_KEY  = "b938e3e8";
-    private static final int POSTER_W     = 65;
-    private static final int POSTER_H     = 96;
+    private static final int POSTER_W = 65;
+    private static final int POSTER_H = 96;
 
     private AgenteInterfaz myAgent;
     private JFrame frame;
@@ -40,6 +39,9 @@ public class BuscadorGUI {
     private JPanel panelResultados;
     private JLabel lblEstado;
     private JButton btnBuscar;
+
+    /** Mapa titulo -> JLabel del poster para actualización asíncrona desde AgenteOMDB */
+    private final Map<String, JLabel> mapaPosterLabels = new HashMap<>();
 
     public BuscadorGUI(AgenteInterfaz agent) {
         this.myAgent = agent;
@@ -309,6 +311,7 @@ public class BuscadorGUI {
     public void mostrarPeliculas(ArrayList<Pelicula> peliculas) {
         SwingUtilities.invokeLater(() -> {
             btnBuscar.setEnabled(true);
+            mapaPosterLabels.clear();
             panelResultados.removeAll();
 
             if (peliculas == null || peliculas.isEmpty()) {
@@ -355,10 +358,10 @@ public class BuscadorGUI {
         card.setOpaque(false);
         card.setBorder(new EmptyBorder(10, 14, 10, 16));
 
-        // ── Poster (izquierda) ──────────────────────────────
+        // ── Poster (izquierda) — se actualiza cuando AgenteOMDB responda ──────────
         JLabel lblPoster = crearPlaceholderPoster();
+        mapaPosterLabels.put(p.getNombre(), lblPoster);
         card.add(lblPoster, BorderLayout.WEST);
-        cargarPosterAsync(p.getNombre(), lblPoster, card);
 
         // ── Medalla + info (centro) ─────────────────────────
         JPanel centro = new JPanel(new BorderLayout(8, 0));
@@ -402,28 +405,10 @@ public class BuscadorGUI {
         centro.add(info, BorderLayout.CENTER);
         card.add(centro, BorderLayout.CENTER);
 
-        // ── Puntuación (derecha) ────────────────────────────
-        int pnt = p.getPuntuacion();
-        Color colPnt = pnt >= 70 ? new Color(80, 200, 90)
-                     : pnt >= 50 ? new Color(255, 195, 50)
-                     : new Color(240, 80, 80);
-        JPanel derecha = new JPanel(new GridLayout(2, 1, 0, 2));
-        derecha.setOpaque(false);
-        derecha.setPreferredSize(new Dimension(72, 60));
-        JLabel lblPnt = new JLabel(pnt + "%", SwingConstants.CENTER);
-        lblPnt.setFont(new Font("SansSerif", Font.BOLD, 22));
-        lblPnt.setForeground(colPnt);
-        JLabel lblMatch = new JLabel("Match", SwingConstants.CENTER);
-        lblMatch.setFont(new Font("SansSerif", Font.PLAIN, 11));
-        lblMatch.setForeground(TEXT_GRAY);
-        derecha.add(lblPnt);
-        derecha.add(lblMatch);
-        card.add(derecha, BorderLayout.EAST);
-
         return card;
     }
 
-    // ── POSTER ASYNC ─────────────────────────────────────────────────────────────
+    // ── POSTER ───────────────────────────────────────────────────────────────────
 
     private JLabel crearPlaceholderPoster() {
         JLabel lbl = new JLabel("🎞", SwingConstants.CENTER) {
@@ -442,30 +427,18 @@ public class BuscadorGUI {
         return lbl;
     }
 
-    private void cargarPosterAsync(String titulo, JLabel lblPoster, JPanel card) {
+    /**
+     * Llamado por AgenteInterfaz cuando AgenteOMDB devuelve la URL del poster.
+     * Descarga la imagen en segundo plano (SwingWorker) y actualiza el label.
+     */
+    public void actualizarPosterDesdeUrl(String titulo, String posterUrl) {
+        JLabel lblPoster = mapaPosterLabels.get(titulo);
+        if (lblPoster == null || posterUrl == null) return;
+
         new SwingWorker<ImageIcon, Void>() {
             @Override
             protected ImageIcon doInBackground() {
                 try {
-                    String urlStr = "https://www.omdbapi.com/?t="
-                        + URLEncoder.encode(titulo, "UTF-8") + "&apikey=" + OMDB_KEY;
-                    HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-                    conn.setConnectTimeout(6000);
-                    conn.setReadTimeout(6000);
-                    if (conn.getResponseCode() != 200) return null;
-
-                    Scanner sc = new Scanner(conn.getInputStream(), "UTF-8");
-                    StringBuilder sb = new StringBuilder();
-                    while (sc.hasNextLine()) sb.append(sc.nextLine());
-                    sc.close();
-                    String json = sb.toString();
-
-                    int pi = json.indexOf("\"Poster\":\"");
-                    if (pi == -1) return null;
-                    String posterUrl = json.substring(pi + 10, json.indexOf("\"", pi + 10));
-                    if (posterUrl.equals("N/A") || posterUrl.isEmpty()) return null;
-
                     HttpURLConnection imgConn = (HttpURLConnection) new URL(posterUrl).openConnection();
                     imgConn.setRequestProperty("User-Agent", "Mozilla/5.0");
                     imgConn.setConnectTimeout(6000);
@@ -474,7 +447,6 @@ public class BuscadorGUI {
                     BufferedImage img = ImageIO.read(is);
                     is.close();
                     if (img == null) return null;
-
                     Image scaled = img.getScaledInstance(POSTER_W, POSTER_H, Image.SCALE_SMOOTH);
                     return new ImageIcon(scaled);
                 } catch (Exception e) {
@@ -489,8 +461,11 @@ public class BuscadorGUI {
                     if (icon != null) {
                         lblPoster.setText(null);
                         lblPoster.setIcon(icon);
-                        card.revalidate();
-                        card.repaint();
+                        Container parent = lblPoster.getParent();
+                        if (parent != null) {
+                            parent.revalidate();
+                            parent.repaint();
+                        }
                     }
                 } catch (Exception ignored) {}
             }

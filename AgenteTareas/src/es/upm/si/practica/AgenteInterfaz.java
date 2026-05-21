@@ -2,6 +2,7 @@ package es.upm.si.practica;
 
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -13,13 +14,18 @@ import jade.lang.acl.UnreadableException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
 public class AgenteInterfaz extends Agent {
 
-    private BuscadorGUI gui;
+    private volatile BuscadorGUI gui;
+
+    /** Mapea convId -> titulo para poder actualizar el poster correcto al recibir respuesta */
+    private final Map<String, String> pendingPosters = new HashMap<>();
 
     @Override
     protected void setup() {
@@ -27,6 +33,27 @@ public class AgenteInterfaz extends Agent {
         SwingUtilities.invokeLater(() -> {
             gui = new BuscadorGUI(this);
             gui.mostrar();
+        });
+
+        // Comportamiento permanente: recibe respuestas de poster de AgenteOMDB
+        addBehaviour(new CyclicBehaviour(this) {
+            @Override
+            public void action() {
+                MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+                ACLMessage msg = receive(mt);
+                if (msg != null) {
+                    String convId = msg.getConversationId();
+                    if (convId != null && convId.startsWith("poster-")) {
+                        String titulo = pendingPosters.remove(convId);
+                        if (titulo != null && gui != null) {
+                            gui.actualizarPosterDesdeUrl(titulo, msg.getContent());
+                        }
+                    }
+                    // Mensajes INFORM que no son de poster se ignoran (no deberían llegar aquí)
+                } else {
+                    block();
+                }
+            }
         });
     }
 
@@ -101,6 +128,40 @@ public class AgenteInterfaz extends Agent {
                     gui.mostrarPeliculas(ranking);
                     System.out.println("[AgenteInterfaz] Ranking recibido con "
                         + (ranking != null ? ranking.size() : 0) + " peliculas.");
+
+                    // 5. Solicitar posters a AgenteOMDB para cada película del ranking
+                    if (ranking != null && !ranking.isEmpty()) {
+                        DFAgentDescription descOMDB = new DFAgentDescription();
+                        ServiceDescription sdOMDB = new ServiceDescription();
+                        sdOMDB.setType("busqueda-posters");
+                        descOMDB.addServices(sdOMDB);
+
+                        AID omdbAID = null;
+                        try {
+                            DFAgentDescription[] resOMDB = DFService.search(myAgent, descOMDB);
+                            if (resOMDB.length > 0) {
+                                omdbAID = resOMDB[0].getName();
+                            }
+                        } catch (FIPAException fe) {
+                            System.err.println("[AgenteInterfaz] No se encontró AgenteOMDB en el DF.");
+                        }
+
+                        if (omdbAID != null) {
+                            long ts = System.currentTimeMillis();
+                            for (int i = 0; i < ranking.size(); i++) {
+                                String titulo = ranking.get(i).getNombre();
+                                String posterConvId = "poster-" + ts + "-" + i;
+                                ACLMessage posterReq = new ACLMessage(ACLMessage.REQUEST);
+                                posterReq.addReceiver(omdbAID);
+                                posterReq.setContent(titulo);
+                                posterReq.setConversationId(posterConvId);
+                                send(posterReq);
+                                pendingPosters.put(posterConvId, titulo);
+                            }
+                            System.out.println("[AgenteInterfaz] Enviadas " + ranking.size()
+                                + " peticiones de poster a AgenteOMDB.");
+                        }
+                    }
                 } catch (UnreadableException e) {
                     gui.mostrarError("Error al decodificar la respuesta del planificador.");
                     e.printStackTrace();
