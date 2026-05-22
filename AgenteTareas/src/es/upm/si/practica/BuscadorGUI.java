@@ -17,7 +17,7 @@ import javax.swing.border.*;
 
 public class BuscadorGUI {
 
-    // ── Paleta ───────────────────────────────────────────────────────────────────
+    // Paleta
     private static final Color BG_DARK    = new Color(15, 15, 30);
     private static final Color ACCENT     = new Color(220, 50, 50);
     private static final Color ACCENT2    = new Color(255, 200, 60);
@@ -40,7 +40,7 @@ public class BuscadorGUI {
     private JLabel lblEstado;
     private JButton btnBuscar;
 
-    /** Mapa titulo -> JLabel del poster para actualización asíncrona desde AgenteOMDB */
+    /*Mapa titulo -> JLabel del poster para actualización asíncrona desde AgenteOMDB */
     private final Map<String, JLabel> mapaPosterLabels = new HashMap<>();
 
     public BuscadorGUI(AgenteInterfaz agent) {
@@ -67,7 +67,7 @@ public class BuscadorGUI {
         frame.setVisible(true);
     }
 
-    // ── HEADER ───────────────────────────────────────────────────────────────────
+    // HEADER
 
     private JPanel crearHeader() {
         JPanel header = new JPanel(new BorderLayout(0, 12)) {
@@ -235,7 +235,7 @@ public class BuscadorGUI {
         myAgent.comenzarBusqueda(listaGeneros, anio, preferencia);
     }
 
-    // ── SCROLL / STATUS ──────────────────────────────────────────────────────────
+    // SCROLL / STATUS
 
     private JScrollPane crearScroll() {
         panelResultados = new JPanel();
@@ -265,7 +265,7 @@ public class BuscadorGUI {
         return bar;
     }
 
-    // ── ESTADOS DEL PANEL ────────────────────────────────────────────────────────
+    //ESTADOS DEL PANEL
 
     private void mostrarBienvenida() {
         panelResultados.removeAll();
@@ -306,7 +306,7 @@ public class BuscadorGUI {
         panelResultados.repaint();
     }
 
-    // ── RESULTADOS ───────────────────────────────────────────────────────────────
+    // RESULTADOS
 
     public void mostrarPeliculas(ArrayList<Pelicula> peliculas) {
         SwingUtilities.invokeLater(() -> {
@@ -327,7 +327,7 @@ public class BuscadorGUI {
             enc.setBorder(new EmptyBorder(4, 0, 10, 0));
             panelResultados.add(enc);
 
-            String[] medallas = {"🥇", "🥈", "🥉", "4.", "5.", "6.", "7.", "8.", "9.", "10."};
+            String[] medallas = {"1", "2", "3", "4.", "5.", "6.", "7.", "8.", "9.", "10."};
             for (int i = 0; i < peliculas.size(); i++) {
                 JPanel card = crearTarjeta(i, peliculas.get(i), medallas);
                 card.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -358,12 +358,12 @@ public class BuscadorGUI {
         card.setOpaque(false);
         card.setBorder(new EmptyBorder(10, 14, 10, 16));
 
-        // ── Poster (izquierda) — se actualiza cuando AgenteOMDB responda ──────────
+        // Poster (izquierda) — se actualiza cuando AgenteOMDB responda
         JLabel lblPoster = crearPlaceholderPoster();
         mapaPosterLabels.put(p.getNombre(), lblPoster);
         card.add(lblPoster, BorderLayout.WEST);
 
-        // ── Medalla + info (centro) ─────────────────────────
+        // Medalla + info (centro)
         JPanel centro = new JPanel(new BorderLayout(8, 0));
         centro.setOpaque(false);
 
@@ -408,8 +408,7 @@ public class BuscadorGUI {
         return card;
     }
 
-    // ── POSTER ───────────────────────────────────────────────────────────────────
-
+    //POSTER
     private JLabel crearPlaceholderPoster() {
         JLabel lbl = new JLabel("🎞", SwingConstants.CENTER) {
             @Override protected void paintComponent(Graphics g) {
@@ -472,7 +471,7 @@ public class BuscadorGUI {
         }.execute();
     }
 
-    // ── ERROR ─────────────────────────────────────────────────────────────────────
+    // ERROR
 
     public void mostrarError(String msg) {
         SwingUtilities.invokeLater(() -> {
@@ -494,7 +493,7 @@ public class BuscadorGUI {
         });
     }
 
-    // ── UTILIDADES ───────────────────────────────────────────────────────────────
+    // UTILIDADES
 
     private JPanel centrado() {
         JPanel p = new JPanel(new GridBagLayout());

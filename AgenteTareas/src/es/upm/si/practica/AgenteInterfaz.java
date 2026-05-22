@@ -24,12 +24,13 @@ public class AgenteInterfaz extends Agent {
 
     private volatile BuscadorGUI gui;
 
-    /** Mapea convId -> titulo para poder actualizar el poster correcto al recibir respuesta */
+    /*Mapea convId -> titulo para poder actualizar el poster correcto al recibir respuesta */
     private final Map<String, String> pendingPosters = new HashMap<>();
 
     @Override
     protected void setup() {
         System.out.println("[AgenteInterfaz] " + getLocalName() + " iniciado.");
+        //Se crea la GUI en el hilo de Swing
         SwingUtilities.invokeLater(() -> {
             gui = new BuscadorGUI(this);
             gui.mostrar();
@@ -44,7 +45,7 @@ public class AgenteInterfaz extends Agent {
                 if (msg != null) {
                     String convId = msg.getConversationId();
                     if (convId != null && convId.startsWith("poster-")) {
-                        String titulo = pendingPosters.remove(convId);
+                        String titulo = pendingPosters.remove(convId); //se elimina del map pq ya no esta pendiente
                         if (titulo != null && gui != null) {
                             gui.actualizarPosterDesdeUrl(titulo, msg.getContent());
                         }
@@ -58,7 +59,7 @@ public class AgenteInterfaz extends Agent {
     }
 
     /**
-     * Llamado por la GUI cuando el usuario pulsa "Buscar Peliculas".
+     * Llamado por la GUI (BuscadorGUI) cuando el usuario pulsa "Buscar Peliculas".
      * Lanza un OneShotBehaviour que busca al planificador en el DF,
      * le envía los filtros y espera la respuesta para mostrársela en la GUI.
      */
@@ -66,7 +67,7 @@ public class AgenteInterfaz extends Agent {
         addBehaviour(new OneShotBehaviour(this) {
             @Override
             public void action() {
-                // 1. Buscar el agente planificador en el Directory Facilitator
+                // Buscar el agente planificador en el Directory Facilitator
                 DFAgentDescription desc = new DFAgentDescription();
                 ServiceDescription sd = new ServiceDescription();
                 sd.setType("planificacion");
@@ -89,7 +90,7 @@ public class AgenteInterfaz extends Agent {
                     return;
                 }
 
-                // 2. Construir los filtros y enviarlos al planificador
+                // Construir los filtros y enviarlos al planificador
                 FiltrosUsuario filtros = new FiltrosUsuario(generos, anio, preferencia);
 
                 ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
@@ -102,12 +103,12 @@ public class AgenteInterfaz extends Agent {
                     return;
                 }
 
-                String convId = "planificacion-" + System.currentTimeMillis();
-                request.setConversationId(convId);
+                String convId = "planificacion-" + System.currentTimeMillis(); //identificacion de respuestas de poster
+                request.setConversationId(convId); 
                 send(request);
                 System.out.println("[AgenteInterfaz] Filtros enviados (convId=" + convId + "). Esperando respuesta...");
 
-                // 3. Esperar la respuesta del planificador (bloqueante, con timeout de 15 s)
+                // Esperar la respuesta del planificador (bloqueante, con timeout de 15 s)
                 MessageTemplate mt = MessageTemplate.MatchConversationId(convId);
                 ACLMessage reply = blockingReceive(mt, 15000);
 
@@ -121,7 +122,7 @@ public class AgenteInterfaz extends Agent {
                     return;
                 }
 
-                // 4. Mostrar el ranking recibido en la GUI
+                // Mostrar el ranking recibido en la GUI
                 try {
                     @SuppressWarnings("unchecked")
                     ArrayList<Pelicula> ranking = (ArrayList<Pelicula>) reply.getContentObject();
@@ -129,7 +130,7 @@ public class AgenteInterfaz extends Agent {
                     System.out.println("[AgenteInterfaz] Ranking recibido con "
                         + (ranking != null ? ranking.size() : 0) + " peliculas.");
 
-                    // 5. Solicitar posters a AgenteOMDB para cada película del ranking
+                    // Solicitar posters a AgenteOMDB para cada película del ranking
                     if (ranking != null && !ranking.isEmpty()) {
                         DFAgentDescription descOMDB = new DFAgentDescription();
                         ServiceDescription sdOMDB = new ServiceDescription();
