@@ -20,12 +20,14 @@ public class Main {
         // NUESTROS AGENTES!!!!
         AgentController planificador = container.createNewAgent("Planificador", AgentePlanificador.class.getName(), null);
         AgentController tmdb = container.createNewAgent("AgenteTMDB", AgenteTMDB.class.getName(), null);
+        AgentController trakt = container.createNewAgent("AgenteTrakt", AgenteTrakt.class.getName(), null);
         AgentController omdb = container.createNewAgent("AgenteOMDB", AgenteOMDB.class.getName(), null);
         AgentController interfaz = container.createNewAgent("InterfazUsuario", AgenteInterfaz.class.getName(), null);
 
         // Arrancamos primero los agentes de servicio para que les dé tiempo a registrarse en el DF
         planificador.start();
         tmdb.start();
+        trakt.start();
         omdb.start();
         // Pausa cortita para asegurar el registro antes de la búsqueda
         Thread.sleep(500);
