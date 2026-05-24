@@ -99,14 +99,6 @@ SSII/
 
 ## Compilación y ejecución
 
-### Con el script (recomendado — Windows)
-
-```bat
-compilar_ejecutar.bat
-```
-
-El script compila con Maven y lanza el sistema directamente con el classpath correcto. Los agentes se comunican por el **puerto 1202**.
-
 ### Manual
 
 ```bash
