@@ -92,7 +92,6 @@ SSII/
 │   │   ├── PeliculaTMDB.java             # Mapeo JSON de respuesta TMDB
 │   │   └── ConjuntoTMDB.java             # Envoltorio de lista de resultados TMDB
 │   └── pom.xml                           # Configuración Maven
-├── compilar_ejecutar.bat                 # Script de compilación y arranque (Windows)
 └── README.md
 ```
 
