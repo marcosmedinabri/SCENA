@@ -131,9 +131,10 @@ public class AgenteTMDB extends Agent {
 
 
 
-        // Se que asi poner la api esta mal, pero se puede resetear y para hacer pruebas de momento asi xd
-        // De momomento solo devuelve peliculas de accion, tengo que cambiar esto lo se pero es para probar que funciona bien
-        String resultado = conseguirInfoApi("https://api.themoviedb.org/3/discover/movie?api_key=e11e7daebd9c3bd388a4c6edcc7b6cb9&with_genres=" + generosfiltrados +"&sort_by=popularity.desc&page=1&language=es-ES");
+        // El string de la url para lo de obtener info de la api y especificar la api key
+        String API_KEY = "e11e7daebd9c3bd388a4c6edcc7b6cb9"; // Esta key sera invalidad antes de hacer publico el repositorio obviamente
+
+        String resultado = conseguirInfoApi("https://api.themoviedb.org/3/discover/movie?api_key=" + API_KEY + "&with_genres=" + generosfiltrados +"&sort_by=popularity.desc&page=1&language=es-ES");
 
 
         GsonBuilder gsonBuilder = new GsonBuilder();
