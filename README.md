@@ -19,6 +19,7 @@ Para instalar el entorno se han de seguir los siguientes pasos (basados en el ma
 
 ## 2. Captura de dependencias necesarias para instalar el proyecto
 
+<img width="447" height="379" alt="image" src="https://github.com/user-attachments/assets/2d8b8f91-b624-438c-921f-578ca89c87bc" />
 
 ---
 
@@ -53,6 +54,7 @@ Como los datos que introduce el usuario son por ventana gráfica, especificamos 
 
 ## 5. Un diagrama de la arquitectura del sistema
 
+<img width="925" height="429" alt="image" src="https://github.com/user-attachments/assets/d84eda5d-6b00-48a3-8c6f-05d5df62f16b" />
 
 ---
 
