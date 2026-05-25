@@ -1,174 +1,62 @@
-# AgenteTareas — Recomendador Semántico de Cine (SMA con JADE)
-
-Práctica de la asignatura **Sistemas de Inteligencia Artificial (SSII)** — 8.º cuatrimestre, Grado en Ingeniería Informática, UPM.
-
-Sistema multi-agente desarrollado con el framework **JADE (Java Agent Development Framework)** que recomienda películas personalizadas consultando APIs externas y aplicando un algoritmo de puntuación semántica.
+# Sistema Multiagente Distribuido Inteligente para Recomendación de Películas
 
 ---
 
-## Descripción
+## 1. Instrucciones de instalación
+En el caso de nuestro proyecto hemos usado JADE sobre el entorno de desarrollo integrado de Eclipse.
 
-El sistema está compuesto por cinco agentes que se comunican siguiendo el protocolo **FIPA**. El usuario selecciona géneros, año y preferencia de temática a través de una interfaz gráfica; el sistema consulta dos fuentes de datos en paralelo, fusiona los resultados, los puntúa y devuelve un ranking con pósters.
+Para instalar el entorno se han de seguir los siguientes pasos (basados en el material dado en la asignatura):
 
-### Agentes
-
-| Agente | Clase | Rol |
-|---|---|---|
-| `Planificador` | `AgentePlanificador.java` | Coordina la consulta a los agentes de datos, fusiona resultados y aplica el algoritmo de ranking |
-| `AgenteTMDB` | `AgenteTMDB.java` | Consulta la API de TMDB para obtener películas por género y año |
-| `AgenteTrakt` | `AgenteTrakt.java` | Consulta la API de Trakt.tv para ampliar el catálogo de películas |
-| `AgenteOMDB` | `AgenteOMDB.java` | Consulta la API de OMDB para obtener la URL del póster de cada película |
-| `InterfazUsuario` | `AgenteInterfaz.java` | Gestiona la GUI Swing, envía los filtros al planificador y muestra el ranking |
-
-### Flujo de comunicación
-
-```
-InterfazUsuario
-    │
-    ├─ 1. Usuario introduce filtros (géneros, año, preferencia)
-    ├─ 2. Busca "planificacion" en el Directory Facilitator (DF)
-    └─ 3. REQUEST → Planificador (objeto FiltrosUsuario serializado)
-              │
-              ├─ 4. REQUEST → AgenteTMDB  (filtros)
-              ├─ 4. REQUEST → AgenteTrakt (filtros)
-              │         │
-              │         └─ 5. INFORM ← AgenteTMDB / AgenteTrakt (listas de películas)
-              │
-              ├─ 6. Fusiona resultados y aplica AlgoritmoPlanificador
-              └─ 7. INFORM → InterfazUsuario (ArrayList<Pelicula> ordenado)
-                        │
-                        ├─ 8. Muestra ranking en la GUI
-                        └─ 9. REQUEST → AgenteOMDB × N (título de cada película)
-                                  │
-                                  └─ 10. INFORM ← AgenteOMDB (URL del póster)
-                                            │
-                                            └─ 11. GUI actualiza póster de forma asíncrona
-```
-
-### Algoritmo de puntuación (`AlgoritmoPlanificador`)
-
-Cada película recibe un score compuesto por tres factores ponderados:
-
-| Factor | Peso | Fuente |
-|---|---|---|
-| Coincidencia de géneros | 5.0 | Géneros de la película vs. géneros seleccionados por el usuario |
-| Valoración TMDB | 3.0 | `vote_average` (0–10) normalizado |
-| Palabras clave en sinopsis | 1.5 | Coincidencias entre la preferencia del usuario y la descripción |
+1. **Descargar Java:** Tienes que tener instalado la versión de java 11 instalado en tu equipo.
+2. **Descargar el proyecto:** Necesitas descargar el proyecto a través del repositorio marcosmedinabri/SSII (lo puedes hacer descargando el .zip y descomprimiéndolo o con el mandato git clone, a preferencia de cada uno).
+3. **Importar el proyecto:** Importa la carpeta que se llama "AgenteTarea" en tu IDE favorito como "Maven Project". Asegúrate de que tu IDE ha importado correctamente el pom.xml con sus dependencias y versión de java especificada (11).
+4. **Obtener claves APIs:** Por motivos de seguridad y privacidad, necesitas obtener tus propias api keys de los siguientes lugares y colocarlas en los siguientes agentes:
+  * OMDb API - The Open Movie Database colocando el api en AgenteOMDB.
+  * The Movie Database (TMDB) colocando el api en AgenteTMDB.
+  * TRAK.TV colocando el api en AgenteTrakt.
 
 ---
 
-## Requisitos
+## 2. Captura de dependencias necesarias para instalar el proyecto
 
-- **Java** 11 o superior (probado con JavaSE-21)
-- **Maven** 3.6+
-- Las librerías en `AgenteTareas/lib/` deben estar presentes:
-  - `jade.jar` (v4.6.0)
-  - `commons-codec-1.3.jar`
-  - `gson-2.14.0.jar`
 
 ---
 
-## Estructura del proyecto
+## 3. Instrucciones de ejecución
+Si has seguido correctamente los pasos de instalación, desde tu IDE solo necesitas ejecutar el Main.java y desde ahí se cargará el entorno Jade con todos sus agentes respectivos.
 
-```
-SSII/
-├── AgenteTareas/
-│   ├── lib/
-│   │   ├── jade.jar                      # Framework JADE 4.6.0
-│   │   ├── commons-codec-1.3.jar         # Dependencia de JADE
-│   │   └── gson-2.14.0.jar               # Parseo JSON (Trakt)
-│   ├── src/es/upm/si/practica/
-│   │   ├── Main.java                     # Punto de entrada; crea el contenedor y lanza los 5 agentes
-│   │   ├── AgentePlanificador.java       # Coordinador: consulta agentes de datos y genera ranking
-│   │   ├── AgenteTMDB.java               # Fuente de datos: API de TMDB
-│   │   ├── AgenteTrakt.java              # Fuente de datos: API de Trakt.tv
-│   │   ├── AgenteOMDB.java               # Fuente de pósters: API de OMDB
-│   │   ├── AgenteInterfaz.java           # GUI + cliente del sistema
-│   │   ├── BuscadorGUI.java              # Ventana Swing del recomendador
-│   │   ├── AlgoritmoPlanificador.java    # Lógica de scoring y ranking
-│   │   ├── PalabrasClavePlanificador.java# Extracción de keywords de la preferencia
-│   │   ├── FiltrosUsuario.java           # Objeto serializable con los filtros del usuario
-│   │   ├── Pelicula.java                 # Modelo de película (nombre, géneros, puntuación, sinopsis)
-│   │   ├── PeliculaTMDB.java             # Mapeo JSON de respuesta TMDB
-│   │   └── ConjuntoTMDB.java             # Envoltorio de lista de resultados TMDB
-│   └── pom.xml                           # Configuración Maven
-└── README.md
-```
+En la ventana grafica que se te abre, selecciona los géneros de películas que deseas ver, el año mínimo de las películas, una breve descripción de lo que te gustaría ver y finalmente dale al botón de buscar, espera unos segundos y si todo ha salido correctamente veras un listado de películas.
 
 ---
 
-## Compilación y ejecución
+## 4. Datos de ejemplo para ejecutar la práctica
+Como los datos que introduce el usuario son por ventana gráfica, especificamos que deberia poner el usuario en cada campo para comprobarlo.
 
-### Manual
+**Datos de ejemplo para ejecutar la práctica:**
 
-```bash
-cd AgenteTareas
-mvn compile
-java -cp "target/classes;lib/jade.jar;lib/commons-codec-1.3.jar;lib/gson-2.14.0.jar" es.upm.si.practica.Main
-```
+### 1.
+* **Generos:** acción, comedia
+* **Año:** 2000
+* **Descripción:** De robots y animales
 
-> **Nota:** `mvn exec:java` no funciona con dependencias de ámbito `system` (las jars locales). Usar siempre el classpath manual o el script.
+### 2.
+* **Generos:** historia
+* **Año:** 2015
+* **Descripción:** Quiero ver de Marvel
 
-### Con Eclipse
-
-1. `File > Import > Existing Projects into Workspace`
-2. Seleccionar la carpeta `AgenteTareas/`
-3. Ejecutar `Main.java` como aplicación Java
-
----
-
-## APIs externas
-
-| API | Uso | Autenticación |
-|---|---|---|
-| [TMDB](https://www.themoviedb.org/documentation/api) | Películas por género y año, valoración | API key en `AgenteTMDB.java` |
-| [Trakt.tv](https://trakt.docs.apiary.io/) | Catálogo alternativo de películas | Client ID en `AgenteTrakt.java` |
-| [OMDB](https://www.omdbapi.com/) | URL del póster por título | API key en `AgenteOMDB.java` |
+### 3.
+* **Generos:** crimen, terror
+* **Año:** 2010
+* **Descripción:** Búscame de misterio y también de asesinatos
 
 ---
 
-## Detalles técnicos
+## 5. Un diagrama de la arquitectura del sistema
 
-### Registro en el Directory Facilitator
-
-Cada agente de servicio se registra al iniciarse con su tipo:
-
-| Tipo de servicio | Agente |
-|---|---|
-| `"planificacion"` | `AgentePlanificador` |
-| `"busqueda-peliculas-tmdb"` | `AgenteTMDB` |
-| `"busqueda-peliculas-trakt"` | `AgenteTrakt` |
-| `"busqueda-posters"` | `AgenteOMDB` |
-
-`AgenteInterfaz` los descubre dinámicamente en el DF sin conocer sus AIDs de antemano.
-
-### Comportamientos JADE utilizados
-
-| Comportamiento | Agente | Descripción |
-|---|---|---|
-| `CyclicBehaviour` | Planificador, TMDB, Trakt, OMDB | Atienden peticiones de forma continua |
-| `OneShotBehaviour` | AgenteInterfaz | Ejecuta una consulta completa por búsqueda del usuario |
-| `CyclicBehaviour` | AgenteInterfaz | Recibe respuestas de póster de AgenteOMDB asíncronamente |
-
-### Gestión de pósters
-
-Los pósters se cargan de forma asíncrona para no bloquear la GUI:
-1. `AgenteInterfaz` envía un `REQUEST` a `AgenteOMDB` por cada película del ranking, usando `conversation-id` del formato `poster-{timestamp}-{i}`.
-2. `AgenteOMDB` responde con `INFORM` (URL del póster) o `FAILURE`.
-3. El `CyclicBehaviour` de `AgenteInterfaz` recibe los `INFORM` y llama a `BuscadorGUI.actualizarPosterDesdeUrl()`.
-4. `BuscadorGUI` descarga y escala la imagen en un `SwingWorker` para no bloquear el EDT.
 
 ---
 
-## Autores
+## 6. Una declaración de IA, indicando cómo se ha utilizado en el proyecto
+El uso de la IA se ha usado para entender conceptos de Jade que no teníamos del todo claro al principio, resolver problemas de código donde no sabíamos que estaba fallando para que nos guiara y buscar información de como funcionaban las APIs.
 
-- **Marcos**
-- **Diego**
-- **Silvia**
-- **Daniel**
-
----
-
-## Licencia
-
-Proyecto académico — uso educativo.
+Adicionalmente, se ha empleado la IA para generar la imagen de la arquitectura estilizando una imagen generada por nosotros a partir de iconos.
