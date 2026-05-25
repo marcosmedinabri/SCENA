@@ -43,7 +43,7 @@ public class AgentePlanificador extends Agent {
         addBehaviour(new CyclicBehaviour(this) {
             @Override
             public void action() {
-                // Espera las peticiones (REQUEST)
+                // Espera las peticiones (REQUEST) de AgenteInterfaz
             	
                 MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
                 ACLMessage msg = receive(mt); //mensaje del AgenteInterfaz
@@ -153,13 +153,6 @@ public class AgentePlanificador extends Agent {
                     respuestasRecibidas++;
                 }
             }
-
-            /*
-            TODO: Hacer aqui la llamada a un agente (ej: AgenteProcesaPreferencias) para procesar la frase de preferencias del usuario y convertirlas
-            en palabras claves para el algoritmo de planificador del ranking
-             */
-
-
 
             // Aplicar el algoritmo inteligente, que tendra en cuenta las palabras claves del usuario de preferencias, valoraciones y generos de la peli
             // Cambiamos el String por la lista final tipada que procesará tu GUI

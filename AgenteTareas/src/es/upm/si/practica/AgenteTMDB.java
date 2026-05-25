@@ -44,7 +44,7 @@ public class AgenteTMDB extends Agent {
             fe.printStackTrace();
         }
         
-        /* 2. COMPORTAMIENTO CÍCLICO PARA ATENDER PETICIONES */
+        /* COMPORTAMIENTO CÍCLICO PARA ATENDER PETICIONES */
         addBehaviour(new CyclicBehaviour(this) {
             @Override
             public void action() {

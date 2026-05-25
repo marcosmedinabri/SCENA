@@ -18,11 +18,9 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 /**
- * AgenteOMDB — consulta la API de OMDB para obtener la URL del poster de una película.
- *
- * Protocolo:
- *   - Recibe: REQUEST con el título de la película como contenido de texto.
- *   - Responde: INFORM con la URL del poster, o FAILURE si no se encuentra.
+ *  consulta la API de OMDB para obtener la URL del poster de una película.
+ *  Recibe: REQUEST con el título de la película como contenido de texto.
+ *  Responde: INFORM con la URL del poster, o FAILURE si no se encuentra.
  */
 public class AgenteOMDB extends Agent {
 
@@ -84,14 +82,14 @@ public class AgenteOMDB extends Agent {
     }
 
     /**
-     * Busca el poster de una película con varios intentos en cascada:
-     *  1. Título limpio + año exacto (?t= &y=)  → cubre títulos en inglés de Trakt con "(YYYY)"
-     *  2. Título limpio sin año (?t=)            → cubre títulos sin año y variantes
-     *  3. Búsqueda por query (?s=)               → más tolerante; ayuda con títulos en español
-     *  4. Solo el título antes de ":" (?s=)      → fallback para subtítulos raros
+     * Busca el poster de una película con varios intentos:
+     *  Título limpio + año exacto (?t= &y=) -> cubre títulos en inglés de Trakt con "(YYYY)"
+     *  Título limpio sin año (?t=) -> cubre títulos sin año y variantes
+     *  Búsqueda por query (?s=) -> más tolerante ayuda con títulos en español
+     *  Solo el título antes de ":" (?s=)-> fallback para subtítulos raros
      */
     private String obtenerUrlPoster(String titulo) {
-        // --- Extraer año si el título viene en formato "Título (YYYY)" ---
+        // Extraer año si el título viene en formato "Título (YYYY)"
         String tituloLimpio = titulo.trim();
         String anio = null;
         Matcher m = PATRON_ANIO.matcher(tituloLimpio);
@@ -100,7 +98,7 @@ public class AgenteOMDB extends Agent {
             anio = m.group(2);
         }
 
-        // Intento 1: coincidencia exacta con año (el más preciso)
+        //coincidencia exacta con año (el más preciso)
         if (anio != null) {
             String json = llamarHTTP("https://www.omdbapi.com/?t="
                     + encode(tituloLimpio) + "&y=" + anio + "&apikey=" + OMDB_KEY);
@@ -108,19 +106,19 @@ public class AgenteOMDB extends Agent {
             if (poster != null) return poster;
         }
 
-        // Intento 2: coincidencia exacta sin año
+        // coincidencia exacta sin año
         String json2 = llamarHTTP("https://www.omdbapi.com/?t="
                 + encode(tituloLimpio) + "&apikey=" + OMDB_KEY);
         String poster2 = extraerPoster(json2);
         if (poster2 != null) return poster2;
 
-        // Intento 3: búsqueda por query — más tolerante con acentos y variantes en español
+        // búsqueda por query más tolerante con acentos y variantes en español
         String json3 = llamarHTTP("https://www.omdbapi.com/?s="
                 + encode(tituloLimpio) + "&type=movie&apikey=" + OMDB_KEY);
         String poster3 = extraerPoster(json3);
         if (poster3 != null) return poster3;
 
-        // Intento 4: solo el título antes de ":" por si el subtítulo rompe la búsqueda
+        // solo el título antes de ":" por si el subtítulo rompe la búsqueda
         if (tituloLimpio.contains(":")) {
             String tituloCorto = tituloLimpio.substring(0, tituloLimpio.indexOf(":")).trim();
             String json4 = llamarHTTP("https://www.omdbapi.com/?s="
@@ -132,7 +130,7 @@ public class AgenteOMDB extends Agent {
         return null;
     }
 
-    /** Hace una petición HTTP GET y devuelve el cuerpo como String, o null si hay error. */
+    /* Hace una petición HTTP GET y devuelve el cuerpo como String, o null si hay error. */
     private String llamarHTTP(String urlStr) {
         try {
             HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
@@ -152,7 +150,7 @@ public class AgenteOMDB extends Agent {
         }
     }
 
-    /** Extrae el primer valor del campo "Poster" de un JSON de OMDB. Devuelve null si es "N/A" o no existe. */
+    /*Extrae el primer valor del campo poster de un JSON de OMDB. Devuelve null si es "N/A" o no existe. */
     private String extraerPoster(String json) {
         if (json == null) return null;
         int idx = json.indexOf("\"Poster\":\"");
