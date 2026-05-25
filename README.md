@@ -1,5 +1,5 @@
 # Sistema Multiagente Distribuido Inteligente para Recomendación de Películas
-
+# SCENA (Smart Cooperative Engine for Networked Agents)
 ---
 
 ## 1. Instrucciones de instalación
