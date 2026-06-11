@@ -38,10 +38,12 @@ Para instalar el entorno se han de seguir los siguientes pasos (basados en el ma
 ## 2. Captura de dependencias necesarias para instalar el proyecto
 <img width="447" height="379" alt="image" src="https://github.com/user-attachments/assets/2d8b8f91-b624-438c-921f-578ca89c87bc" />
 ---
+
 ## 3. Instrucciones de ejecución
 Si has seguido correctamente los pasos de instalación, desde tu IDE solo necesitas ejecutar el Main.java y desde ahí se cargará el entorno Jade con todos sus agentes respectivos.
 En la ventana grafica que se te abre, selecciona los géneros de películas que deseas ver, el año mínimo de las películas, una breve descripción de lo que te gustaría ver y finalmente dale al botón de buscar, espera unos segundos y si todo ha salido correctamente veras un listado de películas.
 ---
+
 ## 4. Datos de ejemplo para ejecutar la práctica
 Como los datos que introduce el usuario son por ventana gráfica, especificamos que deberia poner el usuario en cada campo para comprobarlo.
 **Datos de ejemplo para ejecutar la práctica:**
