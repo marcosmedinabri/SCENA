@@ -63,6 +63,7 @@ Como los datos que introduce el usuario son por ventana gráfica, especificamos 
 ## 5. Un diagrama de la arquitectura del sistema
 <img width="925" height="429" alt="image" src="https://github.com/user-attachments/assets/d84eda5d-6b00-48a3-8c6f-05d5df62f16b" />
 ---
+
 ## 6. Una declaración de IA, indicando cómo se ha utilizado en el proyecto
 El uso de la IA se ha usado para entender conceptos de Jade que no teníamos del todo claro al principio, resolver problemas de código donde no sabíamos que estaba fallando para que nos guiara y buscar información de como funcionaban las APIs.
 Adicionalmente, se ha empleado la IA para generar la imagen de la arquitectura estilizando una imagen generada por nosotros a partir de iconos.
