@@ -21,8 +21,8 @@
      `-"--'---'              
 ```
 
-# Sistema Multiagente Distribuido Inteligente para Recomendación de Películas
 # SCENA (Smart Cooperative Engine for Networked Agents)
+Sistema Multiagente Distribuido Inteligente para Recomendación de Películas
 ---
 ## 1. Instrucciones de instalación
 En el caso de nuestro proyecto hemos usado JADE sobre el entorno de desarrollo integrado de Eclipse.
